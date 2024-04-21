@@ -1,10 +1,14 @@
 from pydantic import BaseModel
 
-class BlogsSchema(BaseModel):
+class BlogsRequestSchema(BaseModel):
     title: str
     content: str
     category_id: int
     author_id: int
-    created_at: int
-    updated_at: int
 
+
+class BlogsResponseSchema(BaseModel):
+    status: str
+    message: str
+    data: list|dict
+    

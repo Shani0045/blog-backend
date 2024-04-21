@@ -8,5 +8,8 @@ class ApiResponse:
         response["status"] = status
         response["message"] = message
         response["data"] = data
-        return JSONResponse(status_code=status_code, content=response)
+        if status_code != 200:
+            return JSONResponse(status_code=status_code, content=response)
+        return response
+    
     

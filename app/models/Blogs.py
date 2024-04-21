@@ -11,6 +11,7 @@ class Blogs(Base):
     id = Column(BigInteger, Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
     title = Column(Text)
     content = Column(Text)
+    slug = Column(Text)
     author_id = Column(Integer)
     category_id = Column(Integer)
     created_at = Column(Integer)

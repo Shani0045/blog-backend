@@ -3,30 +3,42 @@ from fastapi.responses import Response
 from fastapi.responses import Response, JSONResponse
 # from sqlalchemy import text
 
-from app.models.Blogs import Blogs
-from app.models.Categories import Categories
-from ..schemas.blogs.BlogsSchema import BlogsSchema
-
 from configs.database import  get_db
 from core.api_response.api_response import ApiResponse
+from core.utils import utils
+import json
 
-# Create your routes here
+from app.models.Blogs import Blogs
+from app.models.Categories import Categories
+from ..schemas.blogs.BlogsSchema import (BlogsRequestSchema, 
+                                         BlogsResponseSchema
+                                         )
+from ..services.blogs.blog_service import (get_all_category, 
+                                           post_new_category, 
+                                           get_all_blogs,
+                                           get_blog_details,
+                                           post_new_blog
+                                           )
+
+
+# ------------------------------- Create your routes here ------------------------------------
 
 router = APIRouter(tags=["Blogs"])
 
-# Categories Section
+# ------------------------------- Categories Section -----------------------------------------
 
 @router.get("/all-category/", description="Get All Category")
 async def all_category(
     pg_conn = Depends(get_db)
 ):
     
-    data= pg_conn.query(Categories).all()
-    return data
-    # response = ApiResponse.response(status_code=200, status="SUCCESS", message="Successful fetch blogs!",
-                                   # data= data)
-    # return response
-
+    data = await get_all_category(pg_conn)
+    return ApiResponse.response(status_code=200, 
+                                    status="SUCCESS", 
+                                    message="Successful fetch blogs!",
+                                    data= data
+                                   )
+  
 
 @router.post("/post-category/", description="Create New category")
 async def post_category(
@@ -34,54 +46,51 @@ async def post_category(
     pg_conn = Depends(get_db)
 ):
     
-    new_blog = Categories(name=name)
-    pg_conn.add(new_blog)
-    pg_conn.commit()
-    response = ApiResponse.response(status_code=201, status="SUCCESS", message="Successful create category`!")
-    return response
-    # response = ApiResponse.response(status_code=200, status="SUCCESS", message="Successful fetch blogs!",
-                                   # data= data)
-    # return response
+   
+    created = await post_new_category(pg_conn, name)
+    return ApiResponse.response(status_code=201, 
+                                    status="SUCCESS", 
+                                    message="Successful create category"
+                                    )
+   
 
+# ------------------------------- Blogs Section -----------------------------------------------
 
-# Blogs Section 
-
-@router.get("/all-blogs/<slug>", description="Get All Blogs")
+@router.get("/all-blogs/", description="Get All Blogs")
 async def all_blogs(
     pg_conn = Depends(get_db)
 ):
 
-    data= pg_conn.query(Blogs).all()
-    return data
-    # response = ApiResponse.response(status_code=200, status="SUCCESS", message="Successful fetch blogs!",
-                                   # data= data)
-    # return response
+    data = await get_all_blogs(pg_conn)
+    return ApiResponse.response(status_code=200, 
+                                    status="SUCCESS", 
+                                    message="Successful fetch blogs!",
+                                    data=data
+                                   )
+ 
 
-
-@router.get("/get-blog/{slug}", description="Get Blog Details")
+@router.get("/blog-details/{slug}", description="Get Blog Details")
 async def get_blog(
-    slug: str = Path(title="Get Path Parameter"),
+    slug: str = Path(title="path parameter"),
     pg_conn = Depends(get_db)
 ):
     
-    data= pg_conn.query(Blogs).filter(Blogs.title == slug).all()
-    return data
-    # response = ApiResponse.response(status_code=200, status="SUCCESS", message="Successful fetch blogs!",
-                                   # data= data)
-    # return response
-
+    data = await get_blog_details(pg_conn, slug)
+    return ApiResponse.response(status_code=200, 
+                                    status="SUCCESS", 
+                                    message="Successful fetch blogs!",
+                                    data= data
+                                   )
+   
 
 @router.post("/blog-post/", description="Create New Blog")
 async def blog_post(
-    blog_post: BlogsSchema,
+    blog_post: BlogsRequestSchema,
     pg_conn = Depends(get_db),
 ):
     
-    new_blog = Blogs(title=blog_post.title, content=blog_post.content, author_id= blog_post.author_id, 
-                     category_id=blog_post.category_id)
-    
-    pg_conn.add(new_blog)
-    pg_conn.commit()
-    response = ApiResponse.response(status_code=201, status="SUCCESS", message="Successful create blog!")
-    return response
-
+    created = post_new_blog(pg_conn, payload=blog_post)
+    return ApiResponse.response(status_code=201, 
+                                status="SUCCESS", 
+                                message="Successful create blog!"
+                                )
