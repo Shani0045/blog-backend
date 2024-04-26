@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .routers.blogs import router as blog_router
+from apps.blogs.routers.blogs_router import router as blog_router
 
 api_router = APIRouter()
 

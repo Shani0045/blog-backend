@@ -8,12 +8,12 @@ from core.api_response.api_response import ApiResponse
 from core.utils import utils
 import json
 
-from app.models.Blogs import Blogs
-from app.models.Categories import Categories
-from ..schemas.blogs.BlogsSchema import (BlogsRequestSchema, 
+from apps.blogs.models.Blogs import Blogs
+from apps.blogs.models.Categories import Categories
+from ..schemas.BlogsSchema import (BlogsRequestSchema, 
                                          BlogsResponseSchema
                                          )
-from ..services.blogs.blog_service import (get_all_category, 
+from ..services.blog_service import (get_all_category, 
                                            post_new_category, 
                                            get_all_blogs,
                                            get_blog_details,
@@ -61,7 +61,12 @@ async def all_blogs(
     pg_conn = Depends(get_db)
 ):
 
-    data = await get_all_blogs(pg_conn)
+    all_blogs = await get_all_blogs(pg_conn)
+    all_categories = await get_all_category(pg_conn)
+    data = {
+        "blogs": all_blogs,
+        "categories": all_categories
+    }
     return ApiResponse.response(status_code=200, 
                                     status="SUCCESS", 
                                     message="Successful fetch blogs!",
@@ -89,7 +94,9 @@ async def blog_post(
     pg_conn = Depends(get_db),
 ):
     
-    created = post_new_blog(pg_conn, payload=blog_post)
+    created = await post_new_blog(pg_conn, payload=blog_post)
+
+
     return ApiResponse.response(status_code=201, 
                                 status="SUCCESS", 
                                 message="Successful create blog!"
