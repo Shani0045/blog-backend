@@ -11,14 +11,15 @@ import json
 from apps.blogs.models.Blogs import Blogs
 from apps.blogs.models.Categories import Categories
 from ..schemas.BlogsSchema import (BlogsRequestSchema, 
-                                         BlogsResponseSchema
-                                         )
+                                    BlogsResponseSchema
+                                    )
+
 from ..services.blog_service import (get_all_category, 
-                                           post_new_category, 
-                                           get_all_blogs,
-                                           get_blog_details,
-                                           post_new_blog
-                                           )
+                                        post_new_category, 
+                                        get_all_blogs,
+                                        get_blog_details,
+                                        post_new_blog
+                                        )
 
 
 # ------------------------------- Create your routes here ------------------------------------
@@ -63,10 +64,12 @@ async def all_blogs(
 
     all_blogs = await get_all_blogs(pg_conn)
     all_categories = await get_all_category(pg_conn)
+    
     data = {
         "blogs": all_blogs,
         "categories": all_categories
     }
+   
     return ApiResponse.response(status_code=200, 
                                     status="SUCCESS", 
                                     message="Successful fetch blogs!",
