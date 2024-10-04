@@ -15,8 +15,12 @@ async def post_new_category(pg_conn, name: str) -> bool:
     pg_conn.commit()
     return True
 
-async def get_all_blogs(pg_conn):
-     data = pg_conn.query(
+async def get_all_blogs(pg_conn, payload):
+    category_id = payload.get("category_id")
+
+    
+
+    data = pg_conn.query(
                             Blogs.id,
                             Blogs.title, 
                             Blogs.slug, 
@@ -24,8 +28,11 @@ async def get_all_blogs(pg_conn):
                             Blogs.created_at,
                             Categories.name
                             ).join(Blogs, Categories.id==Blogs.category_id)
+     
+    if category_id:
+        data = data.filter(Blogs.category_id == category_id)
 
-     all_blogs = [ 
+    all_blogs = [ 
             {
                 "id": blog[0],
                 "title": blog[1],
@@ -37,7 +44,7 @@ async def get_all_blogs(pg_conn):
              
             for blog in data ]
 
-     return all_blogs
+    return all_blogs
 
 
 async def get_blog_details(pg_conn, slug: str) -> dict:
@@ -58,3 +65,4 @@ async def post_new_blog(pg_conn, payload: dict) -> bool:
     pg_conn.add(new_blog)
     pg_conn.commit()
     return True
+

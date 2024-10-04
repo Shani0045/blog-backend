@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
-
 from .routes import api_router
+from core.middlewares.middlewares import (register_exception_handlers, register_http_exception_handlers, 
+                                            register_validation_exception_handlers)
 # from app.config import conf
  
-# main app start here
-
 API_TITLE =  "Blog Management System"
 API_VERSION = "v1" #conf.API_VERSION
 DESCRIPTION = "blog management system api version "+API_VERSION
@@ -21,6 +19,10 @@ app = FastAPI(
         docs_url = DOCS_URL ,
         redoc_url = REDOC_URL
     )
+
+register_exception_handlers(app)
+register_validation_exception_handlers(app)
+register_http_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
