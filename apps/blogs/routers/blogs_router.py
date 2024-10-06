@@ -56,25 +56,26 @@ async def post_category(
 @router.get("/all-blogs/", description="Get All Blogs")
 async def all_blogs(
     pg_conn = Depends(get_db),
-    category_id: int = Query(title="Category Id", description="please specify category id", default=None),
+    page: int = Query(title="page", default=1, gt=0),
+    limit: int = Query(title="Limit", default=10, gt=0),
+    category_id: int = Query(title="Category Id", default=None, gte=0),
+    search: str = Query(title="Search", default=None, max_length=50),
 ):
-    payload = {
-        "category_id": category_id
-    }
-    all_blogs = await get_all_blogs(pg_conn, payload)
-    all_categories = await get_all_category(pg_conn)
+    payload = {"limit": limit, "page": page}
+
+    if category_id:
+        payload["category_id"] = category_id
+    if search:
+        payload["search"] = search
     
-    data = {
-        "blogs": all_blogs,
-        "categories": all_categories
-    }
+    all_blogs = await get_all_blogs(pg_conn, payload)
+
     return ApiResponse.response(status_code=200, 
                                     status="SUCCESS", 
                                     message="Successful fetch blogs!",
-                                    data=data
+                                    data=all_blogs
                                    )
  
-
 @router.get("/blog-details/{slug}", description="Get Blog Details")
 async def get_blog(
     slug: str = Path(title="path parameter"),

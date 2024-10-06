@@ -38,7 +38,7 @@ async def internal_server_error_handler(request: Request, exc: Exception):
         content={
             "status": "ERROR",
             "message": "internal server error",
-            "errors": {}
+            "errors": {"error": str(exc)}
         }
     )
 

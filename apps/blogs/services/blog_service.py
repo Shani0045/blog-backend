@@ -1,7 +1,7 @@
 
 from apps.blogs.models.Categories import Categories
 from apps.blogs.models.Blogs import Blogs
-from core.utils import utils
+from core.utils.utils import get_offset, generate_slug, calculate_total_pages
 
 
 async def get_all_category(pg_conn) -> list:
@@ -15,10 +15,13 @@ async def post_new_category(pg_conn, name: str) -> bool:
     pg_conn.commit()
     return True
 
-async def get_all_blogs(pg_conn, payload):
+async def get_all_blogs(pg_conn, payload:  dict) -> list:
     category_id = payload.get("category_id")
+    limit = payload.get("limit", 10)
+    page = payload.get("page", 1)
+    search = payload.get("search")
 
-    
+    offset = get_offset(limit=limit, page_number=page)
 
     data = pg_conn.query(
                             Blogs.id,
@@ -28,10 +31,18 @@ async def get_all_blogs(pg_conn, payload):
                             Blogs.created_at,
                             Categories.name
                             ).join(Blogs, Categories.id==Blogs.category_id)
-     
+    
+
     if category_id:
         data = data.filter(Blogs.category_id == category_id)
 
+    if search:
+        data = data.filter(Blogs.title.ilike(f"%{search}%"))
+
+    total_count = data.count()
+    total_page = calculate_total_pages(total_count, limit)
+
+    data = data.order_by("id").offset(offset).limit(limit)
     all_blogs = [ 
             {
                 "id": blog[0],
@@ -43,8 +54,9 @@ async def get_all_blogs(pg_conn, payload):
              } 
              
             for blog in data ]
+    
 
-    return all_blogs
+    return {"blogs": all_blogs, "total_page": total_page}
 
 
 async def get_blog_details(pg_conn, slug: str) -> dict:
@@ -53,7 +65,7 @@ async def get_blog_details(pg_conn, slug: str) -> dict:
 
 
 async def post_new_blog(pg_conn, payload: dict) -> bool:
-    slug = utils.generate_slug(payload.title)
+    slug = generate_slug(payload.title)
     new_blog = Blogs(title=payload.title, 
                      content=payload.content, 
                      author_id= payload.author_id, 
