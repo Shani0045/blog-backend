@@ -1,6 +1,7 @@
 
 from apps.blogs.models.Categories import Categories
 from apps.blogs.models.Blogs import Blogs
+from sqlalchemy import desc
 from core.utils.utils import get_offset, generate_slug, calculate_total_pages
 
 
@@ -42,7 +43,7 @@ async def get_all_blogs(pg_conn, payload:  dict) -> list:
     total_count = data.count()
     total_page = calculate_total_pages(total_count, limit)
 
-    data = data.order_by("id").offset(offset).limit(limit)
+    data = data.order_by(desc("id")).offset(offset).limit(limit)
     all_blogs = [ 
             {
                 "id": blog[0],
