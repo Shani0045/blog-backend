@@ -11,14 +11,17 @@ import json
 from apps.blogs.models.Blogs import Blogs
 from apps.blogs.models.Categories import Categories
 from ..schemas.BlogsSchema import (BlogsRequestSchema, 
-                                    BlogsResponseSchema
+                                    BlogsResponseSchema,
+                                    CommentsSchema
                                     )
 
 from ..services.blog_service import (get_all_category, 
                                         post_new_category, 
                                         get_all_blogs,
                                         get_blog_details,
-                                        post_new_blog
+                                        post_new_blog,
+                                        post_new_comment,
+                                        get_blog_comments
                                         )
 
 
@@ -99,3 +102,36 @@ async def blog_post(
                             status="SUCCESS", 
                             message="Successful create blog!"
                             )
+
+
+@router.post("/comment-post/", description="Create New comment")
+async def comment_post(
+    comment_post: CommentsSchema,
+    pg_conn = Depends(get_db),
+):
+    created_id = await post_new_comment(pg_conn, payload=comment_post)
+    return ApiResponse.response(status_code=201, 
+                            status="SUCCESS", 
+                            message="Successful create comment!",
+                            data=created_id
+                            )
+
+@router.get("/comments/", description="Get Comments")
+async def get_comments(
+    blog_id: int = Query(title="blog id", required=True, gt=0),
+    page: int = Query(title="page", default=1, gt=0),
+    limit: int = Query(title="Limit", default=5, gt=0),
+    pg_conn = Depends(get_db)
+):
+    payload ={"blog_id": blog_id,
+              "page": page,
+              "limit": limit
+              }
+
+    data = await get_blog_comments(pg_conn, payload)
+    return ApiResponse.response(status_code=200, 
+                                    status="SUCCESS", 
+                                    message="Successful fetch blogs!",
+                                    data= data
+                                   )
+  

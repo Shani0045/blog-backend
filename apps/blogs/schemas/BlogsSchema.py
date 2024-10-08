@@ -12,3 +12,7 @@ class BlogsResponseSchema(BaseModel):
     title:str|None
     
     
+class CommentsSchema(BaseModel):
+    content: str
+    user_id: int
+    blog_id: int
